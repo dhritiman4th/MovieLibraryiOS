@@ -12,51 +12,65 @@ struct RegistrationScreen: View {
     @State private var username = ""
     @State private var password = ""
     @Environment(\.presentationMode) var presentation
+    @State var isAnimating = false
+    @State var shouldDisplayAlert = false
+    @State var alertMessage = ""
     private var isValidate: Bool {
         !username.isEmpty && !password.isEmpty
     }
     
     func registerUser() async {
+        isAnimating = true
         do {
             let registerResponseDTO = try await movieLibraryModel.registerUser(username: username, password: password)
+            isAnimating = false
             if !registerResponseDTO.error {
                 presentation.wrappedValue.dismiss()
             } else {
-                print("Error = \(registerResponseDTO.reason)")
+                alertMessage = registerResponseDTO.reason ?? "N/A"
+                shouldDisplayAlert = true
             }
         } catch {
-            print(("Error = \(error.localizedDescription)"))
+            isAnimating = false
+            alertMessage = error.localizedDescription
+            shouldDisplayAlert = true
         }
     }
     
     var body: some View {
         NavigationStack {
-            Form {
-                TextField(text: $username) {
-                    Text("Enter username")
-                }
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                TextField(text: $password) {
-                    Text("Enter password")
-                }
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                
-                HStack {
-                    Spacer()
-                    Button("Register") {
-                        Task {
-                            await registerUser()
-                        }
+            ZStack {
+                Form {
+                    TextField(text: $username) {
+                        Text("Enter username")
                     }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(!isValidate)
-                    Spacer()
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    TextField(text: $password) {
+                        Text("Enter password")
+                    }
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    
+                    HStack {
+                        Spacer()
+                        Button("Register") {
+                            Task {
+                                await registerUser()
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(!isValidate)
+                        Spacer()
+                    }
+                    .padding()
                 }
-                .padding()
+                ActivityIndicator(isAnimating: $isAnimating, style: .large)
             }
-            .navigationTitle("Registration")            
+            .navigationTitle("Registration")
+            .alert(isPresented: $shouldDisplayAlert, content: {
+                Alert(title: Text(Constants.appName), message: Text(alertMessage))
+            })
         }
     }
 }

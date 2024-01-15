@@ -17,16 +17,20 @@ struct LanguageListScreen: View {
     private let movieLibraryModel = MovieLibraryModel()
     @State private var shouldShowAlert = false
     @State private var alertMessage = ""
-    @State private var languageList: [LanguageModel] = []
+    @State private var languageList: [LanguageResponseDTO] = []
     @State private var alertType: AlertType = .none
     @State private var isAddLanguageSheetOpen = false
     @State private var languageName = ""
+    @State var isAnimating = false
     
     
     func fetchLanguageList() async {
+        isAnimating = true
         do {
             languageList = try await movieLibraryModel.fetchLanguages()
+            isAnimating = false
         } catch {
+            isAnimating = false
             alertMessage = error.localizedDescription
             shouldShowAlert = true
         }
@@ -37,22 +41,34 @@ struct LanguageListScreen: View {
         guard !languageName.isEmpty else {
             return
         }
+        isAnimating = true
         do {
             let addedLanguage = try await movieLibraryModel.addLanguage(name: languageName)
+            isAnimating = false
             languageName = ""
             languageList.append(addedLanguage)
         } catch {
+            isAnimating = false
             showAlert(message: error.localizedDescription, shouldShow: true)
         }
     }
     
     var body: some View {
-        VStack {
-            List {
-                ForEach(languageList) { lang in
-                    Text(lang.name)
+        ZStack {
+            VStack {
+                NavigationStack {
+                    List {
+                        ForEach(languageList) { lang in
+                            NavigationLink {
+                                MovieListScreen(selectedLanguageId: lang.id)
+                            } label: {
+                                Text(lang.name)
+                            }
+                        }
+                    }
                 }
             }
+            ActivityIndicator(isAnimating: $isAnimating, style: .large)
         }
         .navigationTitle("Languages(\(userStateViewModel.getUsername() ?? "N/A"))")
         .toolbar(content: {

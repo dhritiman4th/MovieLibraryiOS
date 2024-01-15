@@ -22,7 +22,7 @@ struct MovieLibraryApp: App {
             }
             .environmentObject(userStateVwModel)
             .onAppear {
-                print(userStateVwModel.getUidAndToken().0)
+                print(userStateVwModel.getUidAndToken().0 ?? "")
             }
         }
     }

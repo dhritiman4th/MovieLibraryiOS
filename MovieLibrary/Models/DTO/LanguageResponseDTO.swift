@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct LanguageModel: Codable, Identifiable {
+struct LanguageResponseDTO: Codable, Identifiable {
     let id: UUID
     let name: String
     init(id: UUID, name: String) {

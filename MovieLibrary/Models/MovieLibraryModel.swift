@@ -31,7 +31,7 @@ class MovieLibraryModel: ObservableObject {
         return loginResponse
     }
     
-    func addLanguage(name: String) async throws -> LanguageModel {
+    func addLanguage(name: String) async throws -> LanguageResponseDTO {
         guard let userIdStr = userStateViewModel.getUidAndToken().0,
                 let userId = UUID(uuidString: userIdStr) else {
             throw NetworkError.badRequest
@@ -39,21 +39,50 @@ class MovieLibraryModel: ObservableObject {
         let postData = ["name": name]
         let resource = Resource(url: Constants.URLS.addLanguage(userId: userId),
                                 method: .post(try JSONEncoder().encode(postData)),
-                                model: LanguageModel.self)
+                                model: LanguageResponseDTO.self)
         
         let addedLanguage = try await httpClient.loadRequest(resource: resource)
         return addedLanguage
     }
     
-    func fetchLanguages() async throws -> [LanguageModel] {
-        guard let userIdStr = userStateViewModel.getUidAndToken().0, 
+    func fetchLanguages() async throws -> [LanguageResponseDTO] {
+        guard let userIdStr = userStateViewModel.getUidAndToken().0,
                 let userId = UUID(uuidString: userIdStr) else {
             throw NetworkError.badRequest
         }
         let resource = Resource(url: Constants.URLS.getLanguages(userId: userId),
                                 method: .get([]),
-                                model: [LanguageModel].self)
+                                model: [LanguageResponseDTO].self)
         let languageList = try await httpClient.loadRequest(resource: resource)
         return languageList
+    }
+    
+    func addMovie(name: String, genre: String, releaseDate: String, 
+                  languageId: UUID) async throws -> MovieResponseDTO {
+        guard let userIdStr = userStateViewModel.getUidAndToken().0,
+                let userId = UUID(uuidString: userIdStr) else {
+            throw NetworkError.badRequest
+        }
+        
+        let postData = ["title": name, "genre": genre, "releaseDate": releaseDate]
+        let resource = try Resource(url: Constants.URLS.addMovie(userId: userId, 
+                                                                 languageId: languageId),
+                                    method: .post(JSONEncoder().encode(postData)),
+                                    model: MovieResponseDTO.self)
+        let addedMovie = try await httpClient.loadRequest(resource: resource)
+        return addedMovie
+    }
+    
+    func fetchMovies(languageId: UUID) async throws -> [MovieResponseDTO] {
+        guard let userIdStr = userStateViewModel.getUidAndToken().0,
+              let userId = UUID(uuidString: userIdStr) else {
+            throw NetworkError.badRequest
+        }
+        let resource = Resource(url: Constants.URLS.getMovies(userId: userId, 
+                                                              languageId: languageId),
+                                method: .get([]),
+                                model: [MovieResponseDTO].self)
+        let movieList = try await httpClient.loadRequest(resource: resource)
+        return movieList
     }
 }

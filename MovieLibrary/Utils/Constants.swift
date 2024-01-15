@@ -35,7 +35,12 @@ struct Constants {
         static func getLanguages(userId: UUID) -> URL {
             return URL(string: "\(baseUrlString)/users/\(userId.uuidString)/languages")!
         }
-        
+        static func addMovie(userId: UUID, languageId: UUID) -> URL {
+            return URL(string: "\(baseUrlString)/users/\(userId)/languages/\(languageId)/movies")!
+        }
+        static func getMovies(userId: UUID, languageId: UUID) -> URL {
+            return URL(string: "\(baseUrlString)/users/\(userId)/languages/\(languageId)/movies")!
+        }
     }
     
     static let token: String = "token"
