@@ -16,6 +16,7 @@ struct MovieListScreen: View {
     private let movieLibraryModel = MovieLibraryModel()
     @State private var showAddMovieAcreen = false
     @State private var path = NavigationPath()
+    private let dateFormatter = DateFormatter()
     
     func fetchMovieList() async {
         isAnimating = true
@@ -26,6 +27,22 @@ struct MovieListScreen: View {
             isAnimating = false
             errorMessage = error.localizedDescription
             shouldShowAlert = true
+        }
+    }
+    
+    func deleteMovie(deletedMovieIndex: Int) async {
+        isAnimating = true
+        let movie = movieList[deletedMovieIndex]
+        do {
+            let deletedMovie = try await movieLibraryModel.deletedMovie(languageId: selectedLanguageId, movieId: movie.id)
+            isAnimating = false
+            movieList.remove(at: deletedMovieIndex)
+            errorMessage = "\(deletedMovie.title) has been deleted."
+            shouldShowAlert = true
+        } catch {
+            errorMessage = error.localizedDescription
+            shouldShowAlert = true
+            isAnimating = false
         }
     }
     
@@ -44,10 +61,19 @@ struct MovieListScreen: View {
                                 Text(movie.genre)
                                 HStack {
                                     Text("Released on")
-                                    Text(movie.releaseDate)
+                                    Text(dateFormatter.string(from: Date(timeIntervalSince1970: Double(movie.releaseDate) ?? 0.0)))
                                 }
                             }
                             
+                        }
+                    }
+                    .onDelete { indexSet in
+                        let deletedMovieIndex = indexSet.first
+                        guard let deletedMovieIndex = deletedMovieIndex else {
+                            return
+                        }
+                        Task {
+                            await self.deleteMovie(deletedMovieIndex: deletedMovieIndex)
                         }
                     }
                 }
@@ -56,6 +82,7 @@ struct MovieListScreen: View {
         }
         .navigationTitle("Movies")
         .onAppear() {
+            dateFormatter.dateFormat = "dd-MMM-YYYY"
             Task {
                 await fetchMovieList()
             }

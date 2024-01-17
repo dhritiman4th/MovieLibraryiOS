@@ -14,14 +14,14 @@ enum HostType {
 
 struct Constants {
     static let appName: String = "Movie Library"
-    static let hostType: HostType = .localhost
+    static let hostType: HostType = .remoteHost//.localhost//
     
     private static var baseUrlString: String {
         switch hostType {
         case .localhost: 
             return "http://127.0.0.1:8080/api"
         case .remoteHost: 
-            return ""
+            return "https://dh-movielibrary-server-e19a99223ad5.herokuapp.com/api"
         }
     }
     
@@ -39,7 +39,13 @@ struct Constants {
             return URL(string: "\(baseUrlString)/users/\(userId)/languages/\(languageId)/movies")!
         }
         static func getMovies(userId: UUID, languageId: UUID) -> URL {
-            return URL(string: "\(baseUrlString)/users/\(userId)/languages/\(languageId)/movies")!
+            return URL(string: "\(baseUrlString)/users/\(userId.uuidString)/languages/\(languageId.uuidString)/movies")!
+        }
+        static func updateMovie(userId: UUID, languageId: UUID, movieId: UUID) -> URL {
+            return URL(string: "\(baseUrlString)/users/\(userId.uuidString)/languages/\(languageId.uuidString)/movies/\(movieId.uuidString)")!
+        }
+        static func deleteMovie(userId: UUID, languageId: UUID, movieId: UUID) -> URL {
+            return URL(string: "\(baseUrlString)/users/\(userId.uuidString)/languages/\(languageId.uuidString)/movies/\(movieId.uuidString)")!
         }
     }
     

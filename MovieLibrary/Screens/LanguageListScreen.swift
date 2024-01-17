@@ -70,7 +70,7 @@ struct LanguageListScreen: View {
             }
             ActivityIndicator(isAnimating: $isAnimating, style: .large)
         }
-        .navigationTitle("Languages(\(userStateViewModel.getUsername() ?? "N/A"))")
+        .navigationTitle("Languages")
         .toolbar(content: {
             Button(action: {
                 isAddLanguageSheetOpen.toggle()

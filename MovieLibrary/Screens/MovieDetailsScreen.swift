@@ -30,9 +30,9 @@ struct MovieDetailsScreen: View {
             return
         }
         do {
-            let addedMovie = try await movieLibraryModel.addMovie(name: movieTitle,
+            let _ = try await movieLibraryModel.addMovie(name: movieTitle,
                                                                   genre: genre,
-                                                                  releaseDate: dateFormatter.string(from: selectedReleaseDate),
+                                                         releaseDate: "\(selectedReleaseDate.timeIntervalSince1970)",//dateFormatter.string(from: selectedReleaseDate),
                                                                   languageId: selectedLanguageId)
             isAnimating = false
             DispatchQueue.main.async {
@@ -46,8 +46,33 @@ struct MovieDetailsScreen: View {
     }
     
     func updateMovie() async {
-        DispatchQueue.main.async {
-            self.presentation.wrappedValue.dismiss()
+        isAnimating = true
+        guard let selectedLanguageId = selectedLanguageId else {
+            alertMessage = "Selected language is invalid"
+            shouldShowAlert = true
+            isAnimating = false
+            return
+        }
+        guard let selectedMovieId = selectedMovie?.id else {
+            alertMessage = "Selected movie is invalid"
+            shouldShowAlert = true
+            isAnimating = false
+            return
+        }
+        do {
+            let _ = try await movieLibraryModel.updateMovie(name: movieTitle,
+                                                    genre: genre,
+                                                    releaseDate: "\(selectedReleaseDate.timeIntervalSince1970)",
+                                                    languageId: selectedLanguageId,
+                                                    movieId: selectedMovieId)
+            isAnimating = false
+            DispatchQueue.main.async {
+                self.presentation.wrappedValue.dismiss()
+            }
+        } catch {
+            alertMessage = error.localizedDescription
+            shouldShowAlert = true
+            isAnimating = false
         }
     }
     

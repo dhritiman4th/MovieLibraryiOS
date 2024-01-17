@@ -85,4 +85,33 @@ class MovieLibraryModel: ObservableObject {
         let movieList = try await httpClient.loadRequest(resource: resource)
         return movieList
     }
+    
+    func updateMovie(name: String, genre: String, releaseDate: String, languageId: UUID, movieId: UUID) async throws -> MovieResponseDTO {
+        guard let userIdStr = userStateViewModel.getUidAndToken().0,
+                let userId = UUID(uuidString: userIdStr) else {
+            throw NetworkError.badRequest
+        }
+        let postData = ["title": name, "genre": genre, "releaseDate": releaseDate]
+        let resource = Resource(url: Constants.URLS.updateMovie(userId: userId,
+                                                                languageId: languageId,
+                                                                movieId: movieId),
+                                method: .post(try JSONEncoder().encode(postData)),
+                                model: MovieResponseDTO.self)
+        let updatedMovie = try await httpClient.loadRequest(resource: resource)
+        return updatedMovie
+    }
+    
+    func deletedMovie(languageId: UUID, movieId: UUID) async throws -> MovieResponseDTO {
+        guard let userIdStr = userStateViewModel.getUidAndToken().0,
+                let userId = UUID(uuidString: userIdStr) else {
+            throw NetworkError.badRequest
+        }
+        let resource = Resource(url: Constants.URLS.updateMovie(userId: userId,
+                                                                languageId: languageId,
+                                                                movieId: movieId),
+                                method: .delete,
+                                model: MovieResponseDTO.self)
+        let deletedMovie = try await httpClient.loadRequest(resource: resource)
+        return deletedMovie
+    }
 }
