@@ -46,7 +46,7 @@ struct RegistrationScreen: View {
                     }
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
-                    TextField(text: $password) {
+                    SecureField(text: $password) {
                         Text("Enter password")
                     }
                     .autocorrectionDisabled()
